@@ -5,6 +5,8 @@ import ActivityKit
 protocol LiveActivityManaging {
     associatedtype Attributes: LiveActivityAttributes
     
+    var currentActivities: [Activity<Attributes>] { get }
+    
     func startActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState

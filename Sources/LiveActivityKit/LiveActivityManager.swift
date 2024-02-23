@@ -1,12 +1,14 @@
-import Foundation
 import WidgetKit
 import ActivityKit
 
 @available(iOS 16.2, *)
 class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManaging {
-    private var currentActivites: [Activity<Attributes>] = []
     private var areActivitiesEnabled: Bool {
         ActivityAuthorizationInfo().areActivitiesEnabled
+    }
+    
+    var currentActivities: [Activity<Attributes>] {
+        Activity<Attributes>.activities
     }
     
     func startActivity(
@@ -23,8 +25,6 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         
         do {
             let activity = try requestActivity(with: attributes, showing: state)
-            storeNewLiveActivity(activity)
-            
             return .success(activity.activityState)
         } catch {
             return .failure(.couldNotStart)
@@ -56,8 +56,6 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
             notifyWith: alertConfig
         )
         
-        updateActive(activity)
-        
         return .success(activity.activityState)
     }
     
@@ -85,8 +83,6 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
             with: content,
             dismissalPolicy: dismissalPolicy
         )
-        
-        removeEnded(activity)
         
         return .success(activity.activityState)
     }
@@ -123,38 +119,15 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         )
     }
     
-    private func storeNewLiveActivity(
-        _ activity: Activity<Attributes>
-    ) {
-        currentActivites.append(activity)
-    }
-    
     private func activityIsInProgress(
         with attributes: Attributes
     ) -> Bool {
-        currentActivites.contains(where: { $0.attributes == attributes })
+        currentActivities.contains(where: { $0.attributes == attributes })
     }
     
     private func activeActivity(
         with attributes: Attributes
     ) -> Activity<Attributes>? {
-        currentActivites.first(where: { $0.attributes == attributes })
-    }
-    
-    private func updateActive(
-        _ activity: Activity<Attributes>
-    ) {
-        guard let index = currentActivitiesIndex(for: activity) else { return }
-        currentActivites[index] = activity
-    }
-    
-    private func currentActivitiesIndex(for activity: Activity<Attributes>) -> Int? {
-        currentActivites.firstIndex(where: { $0.attributes == activity.attributes })
-    }
-    
-    private func removeEnded(
-        _ activity: Activity<Attributes>
-    ) {
-        currentActivites.removeAll(where: { $0.attributes == activity.attributes })
+        currentActivities.first(where: { $0.attributes == attributes })
     }
 }
