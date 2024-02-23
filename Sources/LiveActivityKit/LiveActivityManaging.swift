@@ -25,6 +25,10 @@ protocol LiveActivityManaging {
         expiringOn staleDate: Date?,
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async -> Result<ActivityState, LiveActivityError>
+    
+    func endAll(
+        dismissalPolicy: ActivityUIDismissalPolicy
+    )
 }
 
 @available(iOS 16.2, *)
@@ -55,5 +59,11 @@ extension LiveActivityManaging {
             expiringOn: staleDate,
             dismissalPolicy: dismissalPolicy
         )
+    }
+    
+    func endAll(
+        dismissalPolicy: ActivityUIDismissalPolicy = .immediate
+    ) {
+        endAll(dismissalPolicy: dismissalPolicy)
     }
 }

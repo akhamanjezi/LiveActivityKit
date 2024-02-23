@@ -89,6 +89,19 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         return .success(activity.activityState)
     }
     
+    func endAll(
+        dismissalPolicy: ActivityUIDismissalPolicy
+    ) {
+        Activity<Attributes>.activities.forEach { activity in
+            Task {
+                await end(
+                    activity,
+                    dismissalPolicy: dismissalPolicy
+                )
+            }
+        }
+    }
+    
     private func requestActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
