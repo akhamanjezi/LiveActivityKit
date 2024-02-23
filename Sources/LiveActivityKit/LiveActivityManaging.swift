@@ -16,6 +16,13 @@ protocol LiveActivityManaging {
         expiringOn staleDate: Date?,
         notifyWith alertConfig: AlertConfiguration?
     ) async -> Result<ActivityState, LiveActivityError>
+    
+    func stopActivity(
+        with attributes: Attributes,
+        showing state: Activity<Attributes>.ContentState,
+        expiringOn staleDate: Date?,
+        dismissalPolicy: ActivityUIDismissalPolicy
+    ) async -> Result<ActivityState, LiveActivityError>
 }
 
 @available(iOS 16.2, *)
@@ -31,6 +38,20 @@ extension LiveActivityManaging {
             to: state,
             expiringOn: staleDate,
             notifyWith: alertConfig
+        )
+    }
+    
+    func stopActivity(
+        with attributes: Attributes,
+        showing state: Activity<Attributes>.ContentState,
+        expiringOn staleDate: Date? = nil,
+        dismissalPolicy: ActivityUIDismissalPolicy = .default
+    ) async -> Result<ActivityState, LiveActivityError> {
+        await stopActivity(
+            with: attributes,
+            showing: state,
+            expiringOn: staleDate,
+            dismissalPolicy: dismissalPolicy
         )
     }
 }

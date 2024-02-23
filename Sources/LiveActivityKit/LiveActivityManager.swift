@@ -59,6 +59,36 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         return .success(activity.activityState)
     }
     
+    func stopActivity(
+        with attributes: Attributes,
+        showing state: Activity<Attributes>.ContentState,
+        expiringOn staleDate: Date?,
+        dismissalPolicy: ActivityUIDismissalPolicy
+    ) async -> Result<ActivityState, LiveActivityError> {
+        guard areActivitiesEnabled else {
+            return .failure(.notEnabled)
+        }
+        
+        guard let activity = activeActivity(with: attributes) else {
+            return .failure(.notActive)
+        }
+        
+        let content = ActivityContent(
+            state: state,
+            staleDate: staleDate
+        )
+        
+        await end(
+            activity,
+            with: content,
+            dismissalPolicy: dismissalPolicy
+        )
+        
+        removeEnded(activity)
+        
+        return .success(activity.activityState)
+    }
+    
     private func requestActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
@@ -77,6 +107,17 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         await activity.update(content, alertConfiguration: alertConfig)
     }
     
+    private func end(
+        _ activity: Activity<Attributes>,
+        with content: ActivityContent<Attributes.ContentState>,
+        dismissalPolicy: ActivityUIDismissalPolicy
+    ) async {
+        await activity.end(
+            content,
+            dismissalPolicy: dismissalPolicy
+        )
+    }
+    
     private func storeNewLiveActivity(
         _ activity: Activity<Attributes>
     ) {
@@ -93,5 +134,11 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         with attributes: Attributes
     ) -> Activity<Attributes>? {
         liveActivities.first(where: { $0.attributes == attributes })
+    }
+    
+    private func removeEnded(
+        _ activity: Activity<Attributes>
+    ) {
+        liveActivities.removeAll(where: { $0.attributes == activity.attributes })
     }
 }
