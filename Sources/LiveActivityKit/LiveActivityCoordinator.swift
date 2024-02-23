@@ -2,16 +2,16 @@ import WidgetKit
 import ActivityKit
 
 @available(iOS 16.2, *)
-class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManaging {
+open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActivityCoordinating {
     private var areActivitiesEnabled: Bool {
         ActivityAuthorizationInfo().areActivitiesEnabled
     }
     
-    var currentActivities: [Activity<Attributes>] {
+    public var currentActivities: [Activity<Attributes>] {
         Activity<Attributes>.activities
     }
     
-    func startActivity(
+    public func startActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
     ) -> Result<ActivityState, LiveActivityError> {
@@ -24,14 +24,18 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         }
         
         do {
-            let activity = try requestActivity(with: attributes, showing: state)
+            let activity = try requestActivity(
+                with: attributes,
+                showing: state
+            )
+            
             return .success(activity.activityState)
         } catch {
             return .failure(.couldNotStart)
         }
     }
     
-    func updateActivity(
+    public func updateActivity(
         with attributes: Attributes,
         to state: Activity<Attributes>.ContentState,
         expiringOn staleDate: Date?,
@@ -59,7 +63,7 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         return .success(activity.activityState)
     }
     
-    func stopActivity(
+    public func stopActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState?,
         expiringOn staleDate: Date?,
@@ -89,7 +93,7 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         return .success(activity.activityState)
     }
     
-    func endAll(
+    public func endAll(
         dismissalPolicy: ActivityUIDismissalPolicy
     ) {
         Activity<Attributes>.activities.forEach { activity in

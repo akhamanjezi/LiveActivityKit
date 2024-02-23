@@ -1,6 +1,6 @@
 import Foundation
 
-enum LiveActivityError: Error {
+public enum LiveActivityError: Error {
     case notEnabled
     case alreadyInProgress
     case couldNotStart

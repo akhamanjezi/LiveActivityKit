@@ -1,4 +1,4 @@
 import ActivityKit
 
 @available(iOS 16.2, *)
-protocol LiveActivityAttributes: ActivityAttributes, Equatable { }
+public protocol LiveActivityAttributes: ActivityAttributes, Equatable { }

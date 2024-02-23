@@ -2,7 +2,7 @@ import Foundation
 import ActivityKit
 
 @available(iOS 16.2, *)
-protocol LiveActivityManaging {
+public protocol LiveActivityCoordinating {
     associatedtype Attributes: LiveActivityAttributes
     
     var currentActivities: [Activity<Attributes>] { get }
@@ -32,7 +32,7 @@ protocol LiveActivityManaging {
 }
 
 @available(iOS 16.2, *)
-extension LiveActivityManaging {
+public extension LiveActivityCoordinating {
     func updateActivity(
         with attributes: Attributes,
         to state: Activity<Attributes>.ContentState,
