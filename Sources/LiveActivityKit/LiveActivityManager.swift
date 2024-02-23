@@ -61,7 +61,7 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
     
     func stopActivity(
         with attributes: Attributes,
-        showing state: Activity<Attributes>.ContentState,
+        showing state: Activity<Attributes>.ContentState?,
         expiringOn staleDate: Date?,
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async -> Result<ActivityState, LiveActivityError> {
@@ -73,8 +73,10 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
             return .failure(.notActive)
         }
         
-        let content = ActivityContent(
-            state: state,
+        let content = state == nil 
+        ? nil
+        : ActivityContent(
+            state: state!,
             staleDate: staleDate
         )
         
@@ -110,7 +112,7 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
     
     private func end(
         _ activity: Activity<Attributes>,
-        with content: ActivityContent<Attributes.ContentState>,
+        with content: ActivityContent<Attributes.ContentState>? = nil,
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async {
         await activity.end(

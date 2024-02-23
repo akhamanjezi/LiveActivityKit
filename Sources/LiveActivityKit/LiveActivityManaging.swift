@@ -21,7 +21,7 @@ protocol LiveActivityManaging {
     
     func stopActivity(
         with attributes: Attributes,
-        showing state: Activity<Attributes>.ContentState,
+        showing state: Activity<Attributes>.ContentState?,
         expiringOn staleDate: Date?,
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async -> Result<ActivityState, LiveActivityError>
@@ -45,7 +45,7 @@ extension LiveActivityManaging {
     
     func stopActivity(
         with attributes: Attributes,
-        showing state: Activity<Attributes>.ContentState,
+        showing state: Activity<Attributes>.ContentState? = nil,
         expiringOn staleDate: Date? = nil,
         dismissalPolicy: ActivityUIDismissalPolicy = .default
     ) async -> Result<ActivityState, LiveActivityError> {
