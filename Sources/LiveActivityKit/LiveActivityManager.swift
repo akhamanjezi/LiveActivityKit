@@ -34,7 +34,7 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
     func updateActivity(
         with attributes: Attributes,
         to state: Activity<Attributes>.ContentState,
-        expiringOn staleDate: Date? = nil,
+        expiringOn staleDate: Date?,
         notifyWith alertConfig: AlertConfiguration?
     ) async -> Result<ActivityState, LiveActivityError> {
         guard areActivitiesEnabled else {
