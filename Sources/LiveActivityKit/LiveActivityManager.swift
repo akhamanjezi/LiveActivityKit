@@ -56,6 +56,8 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
             notifyWith: alertConfig
         )
         
+        updateActive(activity)
+        
         return .success(activity.activityState)
     }
     
@@ -104,7 +106,10 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         with content: ActivityContent<Attributes.ContentState>,
         notifyWith alertConfig: AlertConfiguration?
     ) async {
-        await activity.update(content, alertConfiguration: alertConfig)
+        await activity.update(
+            content,
+            alertConfiguration: alertConfig
+        )
     }
     
     private func end(
@@ -134,6 +139,17 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
         with attributes: Attributes
     ) -> Activity<Attributes>? {
         liveActivities.first(where: { $0.attributes == attributes })
+    }
+    
+    private func updateActive(
+        _ activity: Activity<Attributes>
+    ) {
+        guard let index = currentActivitiesIndex(for: activity) else { return }
+        liveActivities[index] = activity
+    }
+    
+    private func currentActivitiesIndex(for activity: Activity<Attributes>) -> Int? {
+        liveActivities.firstIndex(where: { $0.attributes == activity.attributes })
     }
     
     private func removeEnded(
