@@ -43,9 +43,9 @@ class ActivityHapppener {
         
         switch result {
             case .success(let activityState):
-            doSomething(with: activityState)
+                doSomething(with: activityState)
             case .failure(let liveActivityError):
-            handle(error: liveActivityError)
+                handle(error: liveActivityError)
         }
     }
 }
