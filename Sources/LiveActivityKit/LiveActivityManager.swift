@@ -4,7 +4,7 @@ import ActivityKit
 
 @available(iOS 16.2, *)
 class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManaging {
-    private var liveActivities: [Activity<Attributes>] = []
+    private var currentActivites: [Activity<Attributes>] = []
     private var areActivitiesEnabled: Bool {
         ActivityAuthorizationInfo().areActivitiesEnabled
     }
@@ -126,35 +126,35 @@ class LiveActivityManager<Attributes: LiveActivityAttributes>: LiveActivityManag
     private func storeNewLiveActivity(
         _ activity: Activity<Attributes>
     ) {
-        liveActivities.append(activity)
+        currentActivites.append(activity)
     }
     
     private func activityIsInProgress(
         with attributes: Attributes
     ) -> Bool {
-        liveActivities.contains(where: { $0.attributes == attributes })
+        currentActivites.contains(where: { $0.attributes == attributes })
     }
     
     private func activeActivity(
         with attributes: Attributes
     ) -> Activity<Attributes>? {
-        liveActivities.first(where: { $0.attributes == attributes })
+        currentActivites.first(where: { $0.attributes == attributes })
     }
     
     private func updateActive(
         _ activity: Activity<Attributes>
     ) {
         guard let index = currentActivitiesIndex(for: activity) else { return }
-        liveActivities[index] = activity
+        currentActivites[index] = activity
     }
     
     private func currentActivitiesIndex(for activity: Activity<Attributes>) -> Int? {
-        liveActivities.firstIndex(where: { $0.attributes == activity.attributes })
+        currentActivites.firstIndex(where: { $0.attributes == activity.attributes })
     }
     
     private func removeEnded(
         _ activity: Activity<Attributes>
     ) {
-        liveActivities.removeAll(where: { $0.attributes == activity.attributes })
+        currentActivites.removeAll(where: { $0.attributes == activity.attributes })
     }
 }
