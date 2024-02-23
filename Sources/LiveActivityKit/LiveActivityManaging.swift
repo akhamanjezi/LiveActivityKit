@@ -51,7 +51,7 @@ extension LiveActivityManaging {
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState? = nil,
         expiringOn staleDate: Date? = nil,
-        dismissalPolicy: ActivityUIDismissalPolicy = .default
+        dismissalPolicy: ActivityUIDismissalPolicy = .immediate
     ) async -> Result<ActivityState, LiveActivityError> {
         await stopActivity(
             with: attributes,
