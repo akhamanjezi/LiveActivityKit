@@ -10,7 +10,7 @@ public protocol LiveActivityCoordinating {
     func startActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
-    ) async -> Result<ActivityState, LiveActivityError>
+    ) -> Result<ActivityState, LiveActivityError>
     
     func updateActivity(
         with attributes: Attributes,
