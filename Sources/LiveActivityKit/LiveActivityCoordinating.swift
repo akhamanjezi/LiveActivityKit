@@ -1,3 +1,4 @@
+#if canImport(ActivityKit)
 import Foundation
 import ActivityKit
 
@@ -67,3 +68,4 @@ public extension LiveActivityCoordinating {
         endAll(dismissalPolicy: dismissalPolicy)
     }
 }
+#endif

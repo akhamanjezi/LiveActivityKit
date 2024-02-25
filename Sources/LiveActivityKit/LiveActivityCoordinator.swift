@@ -1,3 +1,4 @@
+#if canImport(ActivityKit)
 import WidgetKit
 import ActivityKit
 
@@ -150,3 +151,4 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
         currentActivities.first(where: { $0.attributes == attributes })
     }
 }
+#endif
