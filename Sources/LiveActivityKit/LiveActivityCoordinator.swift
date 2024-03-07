@@ -8,6 +8,8 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
         ActivityAuthorizationInfo().areActivitiesEnabled
     }
     
+    public init() {}
+    
     public var currentActivities: [Activity<Attributes>] {
         Activity<Attributes>.activities
     }
