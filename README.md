@@ -8,16 +8,6 @@
   - End a live activity
   - End all live activities
 
-### Configuration
-
-- No advanced configuration required
-  
-### Recommendations
-
-I recommend you use the protocol `LiveActiviyCoordinating` to type cast an object when instantiating--better yet, use DI. Use of the protocol has the following advantages:
-- Extension provides defaults
-- can provide your own implementation at a later point without changing all the places you consume the to-be-replaced `LiveActivityCoordinator`
-
 ### Usage
 
 ```swift
