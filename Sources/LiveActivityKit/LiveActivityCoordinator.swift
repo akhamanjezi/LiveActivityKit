@@ -1,4 +1,4 @@
-#if canImport(ActivityKit)
+#if canImport(ActivityKit) && os(iOS)
 import WidgetKit
 import ActivityKit
 
@@ -17,13 +17,9 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     public func startActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
-    ) -> Result<ActivityState, LiveActivityError> {
+    ) -> Result<Activity<Attributes>.ID, LiveActivityError> {
         guard areActivitiesEnabled else {
             return .failure(.notEnabled)
-        }
-        
-        guard activityIsInProgress(with: attributes) == false else {
-            return .failure(.alreadyInProgress)
         }
         
         do {
@@ -32,14 +28,14 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
                 showing: state
             )
             
-            return .success(activity.activityState)
+            return .success(activity.id)
         } catch {
             return .failure(.couldNotStart)
         }
     }
     
     public func updateActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         to state: Activity<Attributes>.ContentState,
         expiringOn staleDate: Date?,
         notifyWith alertConfig: AlertConfiguration?
@@ -48,8 +44,8 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
             return .failure(.notEnabled)
         }
         
-        guard let activity = activeActivity(with: attributes) else {
-            return .failure(.notActive)
+        guard let activity = activeActivity(withID: activityID) else {
+            return .failure(.activityNotFound)
         }
         
         let content = ActivityContent(
@@ -67,7 +63,7 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     }
     
     public func stopActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         showing state: Activity<Attributes>.ContentState?,
         expiringOn staleDate: Date?,
         dismissalPolicy: ActivityUIDismissalPolicy
@@ -76,8 +72,8 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
             return .failure(.notEnabled)
         }
         
-        guard let activity = activeActivity(with: attributes) else {
-            return .failure(.notActive)
+        guard let activity = activeActivity(withID: activityID) else {
+            return .failure(.activityNotFound)
         }
         
         let content = state == nil 
@@ -98,14 +94,12 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     
     public func endAll(
         dismissalPolicy: ActivityUIDismissalPolicy
-    ) {
-        Activity<Attributes>.activities.forEach { activity in
-            Task {
-                await end(
-                    activity,
-                    dismissalPolicy: dismissalPolicy
-                )
-            }
+    ) async {
+        for activity in Activity<Attributes>.activities {
+            await end(
+                activity,
+                dismissalPolicy: dismissalPolicy
+            )
         }
     }
     
@@ -141,16 +135,10 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
         )
     }
     
-    private func activityIsInProgress(
-        with attributes: Attributes
-    ) -> Bool {
-        currentActivities.contains(where: { $0.attributes == attributes })
-    }
-    
     private func activeActivity(
-        with attributes: Attributes
+        withID activityID: Activity<Attributes>.ID
     ) -> Activity<Attributes>? {
-        currentActivities.first(where: { $0.attributes == attributes })
+        currentActivities.first(where: { $0.id == activityID })
     }
 }
 #endif
