@@ -2,7 +2,6 @@
 import Foundation
 import ActivityKit
 
-@available(iOS 16.2, *)
 public protocol LiveActivityCoordinating {
     associatedtype Attributes: LiveActivityAttributes
     
@@ -32,7 +31,6 @@ public protocol LiveActivityCoordinating {
     ) async
 }
 
-@available(iOS 16.2, *)
 public extension LiveActivityCoordinating {
     func updateActivity(
         withID activityID: Activity<Attributes>.ID,

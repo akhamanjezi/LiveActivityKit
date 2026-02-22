@@ -2,7 +2,6 @@
 import WidgetKit
 import ActivityKit
 
-@available(iOS 16.2, *)
 open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActivityCoordinating {
     private var areActivitiesEnabled: Bool {
         ActivityAuthorizationInfo().areActivitiesEnabled
