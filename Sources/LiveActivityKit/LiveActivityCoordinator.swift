@@ -3,11 +3,21 @@ import WidgetKit
 import ActivityKit
 
 open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActivityCoordinating {
+    private let client: AnyLiveActivityClient<Attributes>
+
     private var areActivitiesEnabled: Bool {
-        ActivityAuthorizationInfo().areActivitiesEnabled
+        client.areActivitiesEnabled
     }
     
-    public init() {}
+    public init() {
+        self.client = .activityKit
+    }
+
+    internal init(
+        client: AnyLiveActivityClient<Attributes>
+    ) {
+        self.client = client
+    }
     
     public var currentActivities: [Activity<Attributes>] {
         Activity<Attributes>.activities
@@ -94,7 +104,7 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     public func endAll(
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async {
-        for activity in Activity<Attributes>.activities {
+        for activity in client.activities {
             await end(
                 activity,
                 dismissalPolicy: dismissalPolicy
@@ -105,15 +115,17 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     private func requestActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
-    ) throws -> Activity<Attributes> {
-        try Activity.request(
+    ) throws -> AnyLiveActivityHandle<Attributes> {
+        try client.request(
             attributes: attributes,
-            contentState: state
+            content: makeContent(
+                with: state
+            )
         )
     }
     
     private func update(
-        _ activity: Activity<Attributes>,
+        _ activity: AnyLiveActivityHandle<Attributes>,
         with content: ActivityContent<Attributes.ContentState>,
         notifyWith alertConfig: AlertConfiguration?
     ) async {
@@ -124,7 +136,7 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     }
     
     private func end(
-        _ activity: Activity<Attributes>,
+        _ activity: AnyLiveActivityHandle<Attributes>,
         with content: ActivityContent<Attributes.ContentState>? = nil,
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async {
@@ -136,8 +148,18 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     
     private func activeActivity(
         withID activityID: Activity<Attributes>.ID
-    ) -> Activity<Attributes>? {
-        currentActivities.first(where: { $0.id == activityID })
+    ) -> AnyLiveActivityHandle<Attributes>? {
+        client.activities.first(where: { $0.id == activityID })
+    }
+
+    private func makeContent(
+        with state: Activity<Attributes>.ContentState,
+        staleDate: Date? = nil
+    ) -> ActivityContent<Attributes.ContentState> {
+        ActivityContent(
+            state: state,
+            staleDate: staleDate
+        )
     }
 }
 #endif

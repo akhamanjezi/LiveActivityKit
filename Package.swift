@@ -13,5 +13,8 @@ let package = Package(
     targets: [
         .target(
             name: "LiveActivityKit"),
+        .testTarget(
+            name: "LiveActivityKitTests",
+            dependencies: ["LiveActivityKit"]),
     ]
 )
