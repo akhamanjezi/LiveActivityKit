@@ -1,10 +1,10 @@
-// swift-tools-version: 5.7.1
+// swift-tools-version: 6.0
 
 import PackageDescription
 
 let package = Package(
     name: "LiveActivityKit",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS(.v17)],
     products: [
         .library(
             name: "LiveActivityKit",
@@ -13,5 +13,8 @@ let package = Package(
     targets: [
         .target(
             name: "LiveActivityKit"),
+        .testTarget(
+            name: "LiveActivityKitTests",
+            dependencies: ["LiveActivityKit"]),
     ]
 )

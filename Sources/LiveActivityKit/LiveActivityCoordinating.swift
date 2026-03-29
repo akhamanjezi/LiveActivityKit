@@ -1,8 +1,7 @@
-#if canImport(ActivityKit)
+#if canImport(ActivityKit) && os(iOS)
 import Foundation
 import ActivityKit
 
-@available(iOS 16.2, *)
 public protocol LiveActivityCoordinating {
     associatedtype Attributes: LiveActivityAttributes
     
@@ -11,17 +10,17 @@ public protocol LiveActivityCoordinating {
     func startActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
-    ) -> Result<ActivityState, LiveActivityError>
+    ) -> Result<Activity<Attributes>.ID, LiveActivityError>
     
     func updateActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         to state: Activity<Attributes>.ContentState,
         expiringOn staleDate: Date?,
         notifyWith alertConfig: AlertConfiguration?
     ) async -> Result<ActivityState, LiveActivityError>
     
     func stopActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         showing state: Activity<Attributes>.ContentState?,
         expiringOn staleDate: Date?,
         dismissalPolicy: ActivityUIDismissalPolicy
@@ -29,19 +28,18 @@ public protocol LiveActivityCoordinating {
     
     func endAll(
         dismissalPolicy: ActivityUIDismissalPolicy
-    )
+    ) async
 }
 
-@available(iOS 16.2, *)
 public extension LiveActivityCoordinating {
     func updateActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         to state: Activity<Attributes>.ContentState,
         expiringOn staleDate: Date? = nil,
         notifyWith alertConfig: AlertConfiguration? = nil
     ) async -> Result<ActivityState, LiveActivityError> {
         await updateActivity(
-            with: attributes,
+            withID: activityID,
             to: state,
             expiringOn: staleDate,
             notifyWith: alertConfig
@@ -49,13 +47,13 @@ public extension LiveActivityCoordinating {
     }
     
     func stopActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         showing state: Activity<Attributes>.ContentState? = nil,
         expiringOn staleDate: Date? = nil,
         dismissalPolicy: ActivityUIDismissalPolicy = .immediate
     ) async -> Result<ActivityState, LiveActivityError> {
         await stopActivity(
-            with: attributes,
+            withID: activityID,
             showing: state,
             expiringOn: staleDate,
             dismissalPolicy: dismissalPolicy
@@ -64,8 +62,8 @@ public extension LiveActivityCoordinating {
     
     func endAll(
         dismissalPolicy: ActivityUIDismissalPolicy = .immediate
-    ) {
-        endAll(dismissalPolicy: dismissalPolicy)
+    ) async {
+        await endAll(dismissalPolicy: dismissalPolicy)
     }
 }
 #endif

@@ -1,14 +1,23 @@
-#if canImport(ActivityKit)
+#if canImport(ActivityKit) && os(iOS)
 import WidgetKit
 import ActivityKit
 
-@available(iOS 16.2, *)
 open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActivityCoordinating {
+    private let client: AnyLiveActivityClient<Attributes>
+
     private var areActivitiesEnabled: Bool {
-        ActivityAuthorizationInfo().areActivitiesEnabled
+        client.areActivitiesEnabled
     }
     
-    public init() {}
+    public init() {
+        self.client = .activityKit
+    }
+
+    internal init(
+        client: AnyLiveActivityClient<Attributes>
+    ) {
+        self.client = client
+    }
     
     public var currentActivities: [Activity<Attributes>] {
         Activity<Attributes>.activities
@@ -17,13 +26,9 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     public func startActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
-    ) -> Result<ActivityState, LiveActivityError> {
+    ) -> Result<Activity<Attributes>.ID, LiveActivityError> {
         guard areActivitiesEnabled else {
             return .failure(.notEnabled)
-        }
-        
-        guard activityIsInProgress(with: attributes) == false else {
-            return .failure(.alreadyInProgress)
         }
         
         do {
@@ -32,14 +37,14 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
                 showing: state
             )
             
-            return .success(activity.activityState)
+            return .success(activity.id)
         } catch {
             return .failure(.couldNotStart)
         }
     }
     
     public func updateActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         to state: Activity<Attributes>.ContentState,
         expiringOn staleDate: Date?,
         notifyWith alertConfig: AlertConfiguration?
@@ -48,8 +53,8 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
             return .failure(.notEnabled)
         }
         
-        guard let activity = activeActivity(with: attributes) else {
-            return .failure(.notActive)
+        guard let activity = activeActivity(withID: activityID) else {
+            return .failure(.activityNotFound)
         }
         
         let content = ActivityContent(
@@ -67,7 +72,7 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     }
     
     public func stopActivity(
-        with attributes: Attributes,
+        withID activityID: Activity<Attributes>.ID,
         showing state: Activity<Attributes>.ContentState?,
         expiringOn staleDate: Date?,
         dismissalPolicy: ActivityUIDismissalPolicy
@@ -76,8 +81,8 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
             return .failure(.notEnabled)
         }
         
-        guard let activity = activeActivity(with: attributes) else {
-            return .failure(.notActive)
+        guard let activity = activeActivity(withID: activityID) else {
+            return .failure(.activityNotFound)
         }
         
         let content = state == nil 
@@ -98,29 +103,29 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     
     public func endAll(
         dismissalPolicy: ActivityUIDismissalPolicy
-    ) {
-        Activity<Attributes>.activities.forEach { activity in
-            Task {
-                await end(
-                    activity,
-                    dismissalPolicy: dismissalPolicy
-                )
-            }
+    ) async {
+        for activity in client.activities {
+            await end(
+                activity,
+                dismissalPolicy: dismissalPolicy
+            )
         }
     }
     
     private func requestActivity(
         with attributes: Attributes,
         showing state: Activity<Attributes>.ContentState
-    ) throws -> Activity<Attributes> {
-        try Activity.request(
+    ) throws -> AnyLiveActivityHandle<Attributes> {
+        try client.request(
             attributes: attributes,
-            contentState: state
+            content: makeContent(
+                with: state
+            )
         )
     }
     
     private func update(
-        _ activity: Activity<Attributes>,
+        _ activity: AnyLiveActivityHandle<Attributes>,
         with content: ActivityContent<Attributes.ContentState>,
         notifyWith alertConfig: AlertConfiguration?
     ) async {
@@ -131,7 +136,7 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
     }
     
     private func end(
-        _ activity: Activity<Attributes>,
+        _ activity: AnyLiveActivityHandle<Attributes>,
         with content: ActivityContent<Attributes.ContentState>? = nil,
         dismissalPolicy: ActivityUIDismissalPolicy
     ) async {
@@ -141,16 +146,20 @@ open class LiveActivityCoordinator<Attributes: LiveActivityAttributes>: LiveActi
         )
     }
     
-    private func activityIsInProgress(
-        with attributes: Attributes
-    ) -> Bool {
-        currentActivities.contains(where: { $0.attributes == attributes })
-    }
-    
     private func activeActivity(
-        with attributes: Attributes
-    ) -> Activity<Attributes>? {
-        currentActivities.first(where: { $0.attributes == attributes })
+        withID activityID: Activity<Attributes>.ID
+    ) -> AnyLiveActivityHandle<Attributes>? {
+        client.activities.first(where: { $0.id == activityID })
+    }
+
+    private func makeContent(
+        with state: Activity<Attributes>.ContentState,
+        staleDate: Date? = nil
+    ) -> ActivityContent<Attributes.ContentState> {
+        ActivityContent(
+            state: state,
+            staleDate: staleDate
+        )
     }
 }
 #endif

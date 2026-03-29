@@ -1,6 +1,6 @@
-#if canImport(ActivityKit)
+#if canImport(ActivityKit) && os(iOS)
 import ActivityKit
 
-@available(iOS 16.2, *)
-public protocol LiveActivityAttributes: ActivityAttributes, Equatable { }
+public protocol LiveActivityAttributes: ActivityAttributes, Sendable
+where ContentState: Sendable { }
 #endif
